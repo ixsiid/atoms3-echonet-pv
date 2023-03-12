@@ -33,15 +33,21 @@ class ELObject {
 	static const uint16_t CLASS_HEMS = 0xff05;
 
 	uint8_t _instance;
-	uint16_t _class_id;
+	uint8_t _class_id;
+	uint8_t _group_id;
+	uint8_t _major_version;
+	uint8_t _minor_version;
 
 	virtual uint8_t get(uint8_t* epcs, uint8_t epc_count) = 0;
 	virtual uint8_t set(uint8_t* epcs, uint8_t epc_count) = 0;
 
     public:
 	ELObject();
-	uint16_t class_id();
+	uint8_t group_id();
+	uint8_t class_id();
 	uint8_t instance();
+	uint8_t major_version();
+	uint8_t minor_version();
 	int send(UDPSocket* udp, const esp_ip_addr_t* addr);
 
 	bool process(const elpacket_t* recv, uint8_t* epc_array);
@@ -57,5 +63,5 @@ class Profile : public ELObject {
 	uint8_t set(uint8_t* epcs, uint8_t epc_count);
 
     public:
-	Profile();
+	Profile(ELObject * object);
 };

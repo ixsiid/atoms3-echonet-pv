@@ -10,7 +10,12 @@
 EVPS::EVPS(uint8_t instance) : ELObject(), evps{} {
 	update_mode_cb	 = nullptr;
 	this->_instance = instance;
-	_class_id		 = 0x7e02;  // EVPSオブジェクト
+
+	_class_id = 0x7e;
+	_group_id = 0x02;  // EVPSオブジェクト
+
+	_major_version = 1;
+	_minor_version = 13;
 
 	//// スーパークラス
 	// 設置場所
@@ -86,7 +91,7 @@ EVPS::EVPS(uint8_t instance) : ELObject(), evps{} {
 
 uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 	// ESP_LOGI(___tag, "EVPS: get %d", count);
-	p->src_device_class = _class_id;
+	p->src_device_class = (_class_id << 8) | _group_id;
 	p->src_device_id	= _instance;
 
 	uint8_t* t = epcs;
@@ -137,7 +142,7 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 
 uint8_t EVPS::get(uint8_t* epcs, uint8_t count) {
 	ESP_LOGI(___tag, "EVPS: get %d", count);
-	p->src_device_class = _class_id;
+	p->src_device_class = (_class_id << 8) | _group_id;
 	p->src_device_id	= _instance;
 
 	uint8_t* t = epcs;

@@ -25,9 +25,7 @@
 #include <button.hpp>
 #include <wifiManager.hpp>
 #include <udp-socket.hpp>
-#include <evps-object.hpp>
-
-#include "NatureLogo.hpp"
+#include <pv-object.hpp>
 
 #include "wifi_credential.h"
 /**
@@ -109,15 +107,11 @@ void app_main(void) {
 
 	int packetSize;
 
-	static NatureLogo *logo;
-	static bool active = false;
+	PV *pv = new PV(1);
 
-	logo = new NatureLogo(display.width(), display.height());
-	logo->draw(display, active);
+	Profile *profile = new Profile(pv);
 
-	Profile *profile = new Profile();
-	EVPS *evps	  = new EVPS(1);
-
+	/*
 	evps->set_update_mode_cb([](EVPS_Mode current_mode, EVPS_Mode request_mode) {
 		EVPS_Mode next_mode;
 		switch (request_mode) {
@@ -136,10 +130,9 @@ void app_main(void) {
 		// モード繊維がないため、何もしない
 		if (current_mode == next_mode) return current_mode;
 
-		active = (next_mode == EVPS_Mode::Charge);
-		logo->draw(display, active);
 		return next_mode;
 	});
+	*/
 
 	uint8_t rBuffer[EL_BUFFER_SIZE];
 	elpacket_t *p = (elpacket_t *)rBuffer;
@@ -156,7 +149,7 @@ void app_main(void) {
 		packetSize = udp->read(rBuffer, EL_BUFFER_SIZE, &remote_addr);
 
 		if (packetSize > 0) {
-			if (epcs[0] == 0xda) {
+			if (epcs[0] == 0xda || true) {
 				ESP_LOGI("EL Packet", "(%04x, %04x) %04x-%02x -> %04x-%02x: ESV %02x [%02x]",
 					    p->_1081, p->packet_id,
 					    p->src_device_class, p->src_device_id,
@@ -174,12 +167,15 @@ void app_main(void) {
 						continue;
 					}
 					break;
-				case 0x7e02:
-					epc_res_count = evps->process(p, epcs);
+				case 0x7902: // PV
+					epc_res_count = pv->process(p, epcs);
 					if (epc_res_count > 0) {
-						evps->send(udp, &remote_addr);
+						pv->send(udp, &remote_addr);
 						continue;
 					}
+					break;
+				default:
+					ESP_LOGE("EL Packet", "Unknown class access: %hx", p->dst_device_class);
 					break;
 			}
 		}
