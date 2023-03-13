@@ -22,6 +22,10 @@ typedef struct {
 
 // to HEMS用
 class ELObject {
+	public:
+	const uint8_t _instance_id;
+	const uint16_t _class_id;
+
     protected:
 	static uint8_t buffer[EL_BUFFER_SIZE + 32];
 	static size_t buffer_length;
@@ -32,19 +36,15 @@ class ELObject {
 
 	static const uint16_t CLASS_HEMS = 0xff05;
 
-	uint8_t _instance;
-	uint16_t _class_id;
-
 	virtual uint8_t get(uint8_t* epcs, uint8_t epc_count) = 0;
-	virtual uint8_t set(uint8_t* epcs, uint8_t epc_count) = 0;
+	virtual uint8_t set(uint8_t* epcs, uint8_t epc_count) = 0;;
 
     public:
-	ELObject();
-	uint16_t class_id();
-	uint8_t instance();
+	ELObject(uint8_t instance_id, uint16_t class_id);
 	int send(UDPSocket* udp, const esp_ip_addr_t* addr);
 
 	bool process(const elpacket_t* recv, uint8_t* epc_array);
+
 };
 
 class Profile : public ELObject {
@@ -58,4 +58,6 @@ class Profile : public ELObject {
 
     public:
 	Profile();
+	
+	Profile operator<<(ELObject * object);
 };

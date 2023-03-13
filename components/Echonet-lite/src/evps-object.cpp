@@ -7,10 +7,8 @@
 #undef ___tag
 #define ___tag "EL EVPS"
 
-EVPS::EVPS(uint8_t instance) : ELObject(), evps{} {
+EVPS::EVPS(uint8_t instance) : ELObject(1, 0x7e02), evps{} {
 	update_mode_cb	 = nullptr;
-	this->_instance = instance;
-	_class_id		 = 0x7e02;  // EVPSオブジェクト
 
 	//// スーパークラス
 	// 設置場所
@@ -87,7 +85,7 @@ EVPS::EVPS(uint8_t instance) : ELObject(), evps{} {
 uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 	// ESP_LOGI(___tag, "EVPS: get %d", count);
 	p->src_device_class = _class_id;
-	p->src_device_id	= _instance;
+	p->src_device_id	= _instance_id;
 
 	uint8_t* t = epcs;
 	uint8_t* n = epc_start;
@@ -138,7 +136,7 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 uint8_t EVPS::get(uint8_t* epcs, uint8_t count) {
 	ESP_LOGI(___tag, "EVPS: get %d", count);
 	p->src_device_class = _class_id;
-	p->src_device_id	= _instance;
+	p->src_device_id	= _instance_id;
 
 	uint8_t* t = epcs;
 	uint8_t* n = epc_start;

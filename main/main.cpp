@@ -115,8 +115,10 @@ void app_main(void) {
 	logo = new NatureLogo(display.width(), display.height());
 	logo->draw(display, active);
 
-	Profile *profile = new Profile();
+	Profile profile = Profile();
 	EVPS *evps	  = new EVPS(1);
+
+	profile << evps << evps;
 
 	evps->set_update_mode_cb([](EVPS_Mode current_mode, EVPS_Mode request_mode) {
 		EVPS_Mode next_mode;
@@ -168,9 +170,9 @@ void app_main(void) {
 			uint8_t epc_res_count = 0;
 			switch (p->dst_device_class) {
 				case 0xf00e:
-					epc_res_count = profile->process(p, epcs);
+					epc_res_count = profile.process(p, epcs);
 					if (epc_res_count > 0) {
-						profile->send(udp, &remote_addr);
+						profile.send(udp, &remote_addr);
 						continue;
 					}
 					break;
