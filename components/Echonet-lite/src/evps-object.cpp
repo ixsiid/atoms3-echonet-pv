@@ -5,7 +5,7 @@
 const char EVPS::TAG[] = "EL EVPS";
 
 EVPS::EVPS(uint8_t instance) : ELObject(instance, EVPS::class_u16), evps{} {
-	update_mode_cb	 = nullptr;
+	update_mode_cb = nullptr;
 
 	//// スーパークラス
 	// 設置場所
@@ -90,8 +90,8 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 
 		if (evps[epc] == nullptr) return 0;
 
-		switch(epc) {
-			case 0xda: // 運転モード
+		switch (epc) {
+			case 0xda:  // 運転モード
 				if (update_mode_cb) {
 					Mode new_mode = update_mode_cb((Mode)evps[epc][1], (Mode)*t);
 					if (new_mode == Mode::Unacceptable) return 0;
@@ -135,13 +135,13 @@ uint8_t EVPS::get(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
- 		ESP_LOGD(TAG, "EPC 0x%02x [%d]", epc, len);
+		ESP_LOGD(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (evps[epc] == nullptr) return 0;
 
 		if (len > 0) {
- 			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
+			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 
@@ -161,10 +161,10 @@ void EVPS::set_update_mode_cb(update_mode_cb_t cb) {
 };
 
 void EVPS::notify_mode() {
-	p->epc_count = 1;
-	p->esv = 0x74; // ESV_INFC
-	epc_start[0] = 0xda;
-	epc_start[1] = evps[0xda][0];
-	epc_start[2] = evps[0xda][1];
+	p->epc_count  = 1;
+	p->esv	    = 0x74;  // ESV_INFC
+	epc_start[0]  = 0xda;
+	epc_start[1]  = evps[0xda][0];
+	epc_start[2]  = evps[0xda][1];
 	buffer_length = sizeof(elpacket_t) + 3;
 };
