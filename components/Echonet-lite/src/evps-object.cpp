@@ -94,8 +94,8 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 		switch(epc) {
 			case 0xda: // 運転モード
 				if (update_mode_cb) {
-					EVPS_Mode new_mode = update_mode_cb((EVPS_Mode)evps[epc][1], (EVPS_Mode)*t);
-					if (new_mode == EVPS_Mode::Unacceptable) return 0;
+					Mode new_mode = update_mode_cb((Mode)evps[epc][1], (Mode)*t);
+					if (new_mode == Mode::Unacceptable) return 0;
 
 					evps[epc][1] = (uint8_t)new_mode;
 				} else {

@@ -111,19 +111,19 @@ void app_main(void) {
 	profile << pv << evps << battery;
 
 	/*
-	evps->set_update_mode_cb([](EVPS_Mode current_mode, EVPS_Mode request_mode) {
+	evps->set_update_mode_cb([](EVPS::Mode current_mode, EVPS::Mode request_mode) {
 		EVPS_Mode next_mode;
 		switch (request_mode) {
-			case EVPS_Mode::Charge:
-				next_mode = EVPS_Mode::Charge;
+			case EVPS::Mode::Charge:
+				next_mode = EVPS::Mode::Charge;
 				break;
-			case EVPS_Mode::Stanby:
-			case EVPS_Mode::Stop:
-			case EVPS_Mode::Auto:
-				next_mode = EVPS_Mode::Stanby;
+			case EVPS::Mode::Stanby:
+			case EVPS::Mode::Stop:
+			case EVPS::Mode::Auto:
+				next_mode = EVPS::Mode::Stanby;
 				break;
 			default:
-				return EVPS_Mode::Unacceptable;
+				return EVPS::Mode::Unacceptable;
 		}
 
 		// モード繊維がないため、何もしない
