@@ -27,6 +27,7 @@
 #include <udp-socket.hpp>
 #include <pv-object.hpp>
 #include <evps-object.hpp>
+#include <battery-object.hpp>
 
 #include "wifi_credential.h"
 /**
@@ -115,6 +116,9 @@ void app_main(void) {
 
 	EVPS *evps = new EVPS(3);
 	profile.add(evps);
+
+	Battery *battery = new Battery(4);
+	profile.add(battery);
 
 	/*
 	evps->set_update_mode_cb([](EVPS_Mode current_mode, EVPS_Mode request_mode) {

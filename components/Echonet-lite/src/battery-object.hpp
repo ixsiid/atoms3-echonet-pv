@@ -1,18 +1,14 @@
 #pragma once
 #include "ECHONETlite-object.hpp"
 
-class PV : public ELObject {
+class Battery : public ELObject {
     private:
-	uint8_t* pv[0xff];
+	uint8_t* battery[0xff];
 
 	uint8_t get(uint8_t* epcs, uint8_t epc_count);
 	uint8_t set(uint8_t* epcs, uint8_t epc_count);
 
-	uint32_t timer;
-
     public:
-	PV(uint8_t instance);
-	void update();
-	void update(uint16_t watt);
+	Battery(uint8_t instance);
 	void notify_mode();
 };

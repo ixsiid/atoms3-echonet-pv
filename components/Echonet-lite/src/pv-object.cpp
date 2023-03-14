@@ -8,8 +8,6 @@
 #define ___tag "EL PV"
 
 PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
-	update_mode_cb	 = nullptr;
-
 	//// スーパークラス
 	// 設置場所
 	pv[0x81] = new uint8_t[0x02]{0x01, 0b01111101}; // その他
@@ -46,7 +44,7 @@ PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 	// ^^^^
 
 	pv[0x80] = new uint8_t[0x02]{0x01, 0x30};
-	pv[0x83] = new uint8_t[0x12]{0x11, 0xfe, 0x10, 0x0f, 0x0e, 0x0d,
+	pv[0x83] = new uint8_t[0x12]{0x11, 0xfe, maker_code[0], maker_code[1], maker_code[2], 0x0d,
 	                                         0x0c, 0x0b, 0x0a, 0x09,
 	                                         0x08, 0x07, 0x06, 0x05,
 	                                         0x04, 0x03, 0x02, 0x01};
@@ -72,7 +70,7 @@ PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 	pv[0xd0] = new uint8_t[0x02]{0x01, 0x00};
 	pv[0xd1] = new uint8_t[0x02]{0x01, 0x44};
 	
-	pv[0xe0] = new uint8_t[0x03]{0x02, 0x00, 0x30};
+	pv[0xe0] = new uint8_t[0x03]{0x02, 0x00, 0x00};
 	pv[0xe1] = new uint8_t[0x05]{0x04, 0x00, 0x00, 0x00, 0x01};
 	pv[0xe8] = new uint8_t[0x03]{0x02, 0x75, 0x30};
 };
@@ -94,18 +92,8 @@ uint8_t PV::set(uint8_t* epcs, uint8_t count) {
 
 		if (pv[epc] == nullptr) return 0;
 
-		// ここをほんとはコールバックをしたい
 		switch(epc) {
-			case 0xda: // 運転モード
-				if (update_mode_cb) {
-					PV_Mode new_mode = update_mode_cb((PV_Mode)pv[epc][1], (PV_Mode)*t);
-					if (new_mode == PV_Mode::Unacceptable) return 0;
-
-					pv[epc][1] = (uint8_t)new_mode;
-				} else {
-					pv[epc][1] = *t;
-				}
-				break;
+			// EPCのチェックが無い
 			default:
 				memcpy(&(pv[epc][1]), t, len);
 				break;
@@ -161,8 +149,14 @@ uint8_t PV::get(uint8_t* epcs, uint8_t count) {
 	return res_count;
 };
 
-void PV::set_update_mode_cb(update_mode_pv_cb_t cb) {
-	update_mode_cb = cb;
+void PV::update() {
+	// 積算値を更新する 0xe1: Wh 4byte
+};
+
+void PV::update(uint16_t watt) {
+	pv[0xe0][1] = watt >> 8;
+	pv[0xe0][2] = watt & 0xff;
+	update();
 };
 
 void PV::notify_mode() {
