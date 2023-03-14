@@ -15,17 +15,17 @@ Battery::Battery(uint8_t instance) : ELObject(instance, Battery::class_u16), bat
 	// メーカコード
 	battery[0x8a] = maker_code;
 	// 状態変更通知アナウンスマップ
-	battery[0x9d] = new uint8_t[0x08]{0x07, 0x80, 0xaa, 0xab, 0xc1, 0xc2, 0xcf, 0xda};
+	battery[0x9d] = new uint8_t[0x09]{0x08, 0x07, 0x80, 0xaa, 0xab, 0xc1, 0xc2, 0xcf, 0xda};
 	// Setプロパティマップ
-	battery[0x9e] = new uint8_t[0x04]{0x03, 0xaa, 0xab, 0xda};
+	battery[0x9e] = new uint8_t[0x05]{0x04, 0x03, 0xaa, 0xab, 0xda};
 	// Getプロパティマップ
-	battery[0x9f] = new uint8_t[0x12]{0x11, 0x19,
-							    // fedcba98
+	battery[0x9f] = new uint8_t[0x12]{0x11, 0x18,
+							    //fedcba98
 							    0b00000101,
 							    0b00010100,
 							    0b01010100,
-							    0b01000101,
-							    0b01000100,
+							    0b00100101,
+							    0b00000100,
 							    0b00000100,  // 0x_5
 							    0b01000000,
 							    0b00000010,
@@ -60,19 +60,23 @@ Battery::Battery(uint8_t instance) : ELObject(instance, Battery::class_u16), bat
 	battery[0xaa] = new uint8_t[0x05]{0x04, 0x00, 0x00, 0x00, 0x00};	 // Set/Get 充電電力量（設定値） Wh
 	battery[0xab] = new uint8_t[0x05]{0x04, 0x00, 0x00, 0x00, 0x00};	 // Set/Get 放電電力量（設定値） Wh
 
-	battery[0xc1] = new uint8_t[0x02]{0x01, 0x00};									// Set/Get 充電方式
-	battery[0xc2] = new uint8_t[0x02]{0x01, 0x41};									// Set/Get 放電方式
+	battery[0xc1] = new uint8_t[0x02]{0x01, 0x03};  // 充電方式, 指定電力充電
+	battery[0xc2] = new uint8_t[0x02]{0x01, 0x03};  // 放電方式, 指定電力放電
+
 	battery[0xc8] = new uint8_t[0x09]{0x08, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x17, 0x70};	// 最少充電電力, 最大受電電力 W, 10W - 6kW
 	battery[0xc9] = new uint8_t[0x09]{0x08, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x17, 0x70};	// 最少放電電力, 最大放電電力 W, 10W - 6kW
-	battery[0xcf] = new uint8_t[0x02]{0x01, static_cast<uint8_t>(Mode::Auto)};								// Set/Get 動作状態, 自動
+	battery[0xcf] = new uint8_t[0x02]{0x01, static_cast<uint8_t>(Mode::Stanby)};			// 動作状態, 自動
 
-	battery[0xda] = new uint8_t[0x02]{0x01, static_cast<uint8_t>(Mode::Auto)};  // Set/Get 運転モード設定、 自動
-	battery[0xdb] = new uint8_t[0x02]{0x01, 0x00};	    // 系統連系状態, 系統連系（逆潮流可）
+	battery[0xd3] = new uint8_t[0x05]{0x04, 0x00, 0x00, 0x00, 0x00};	 // (Optional) 瞬時充放電電力
+
+	battery[0xda] = new uint8_t[0x02]{0x01, static_cast<uint8_t>(Mode::Stanby)};  // Set/Get 運転モード設定、 自動
+	battery[0xdb] = new uint8_t[0x02]{0x01, 0x00};						   // 系統連系状態, 系統連系（逆潮流可）
 
 	battery[0xe2] = new uint8_t[0x05]{0x04, 0x00, 0x00, 0x00, 0x00};	 // 蓄電残量 Wh
-	battery[0xe3] = new uint8_t[0x03]{0x02, 0x00, 0x00};			 // 蓄電残量 0.1Ah
-	battery[0xe4] = new uint8_t[0x02]{0x01, 0x00};				 // 蓄電残量 %
-	battery[0xe6] = new uint8_t[0x02]{0x01, static_cast<uint8_t>(Type::Unknown)};		 // 電池の種類
+	// battery[0xe3] = new uint8_t[0x03]{0x02, 0x00, 0x00};		 // 蓄電残量 0.1Ah
+	// battery[0xe4] = new uint8_t[0x02]{0x01, 0x00};				 // 蓄電残量 %
+
+	battery[0xe6] = new uint8_t[0x02]{0x01, static_cast<uint8_t>(Type::Unknown)};  // 電池の種類
 };
 
 uint8_t Battery::set(uint8_t* epcs, uint8_t count) {
@@ -145,6 +149,18 @@ uint8_t Battery::get(uint8_t* epcs, uint8_t count) {
 	buffer_length = sizeof(elpacket_t) + (n - epc_start);
 
 	return res_count;
+};
+
+void Battery::update(){
+    // 積算値を更新する
+};
+
+void Battery::update(int watt) {
+	update();
+	battery[0xd3][1] = static_cast<uint8_t>(watt >> 24);
+	battery[0xd3][2] = static_cast<uint8_t>(watt >> 16);
+	battery[0xd3][3] = static_cast<uint8_t>(watt >> 8);
+	battery[0xd3][4] = static_cast<uint8_t>(watt >> 0);
 };
 
 void Battery::notify_mode() {

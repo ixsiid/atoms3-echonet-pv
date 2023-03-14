@@ -65,7 +65,7 @@ class Profile : public ELObject {
     public:
 	Profile(uint8_t major_version, uint8_t minor_version);
 
-	void add(ELObject * object);
+	Profile * add(ELObject * object);
 
 	/*
 	Profile operator<<(ELObject& object) {

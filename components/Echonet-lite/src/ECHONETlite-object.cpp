@@ -68,11 +68,11 @@ Profile::Profile(uint8_t major_version, uint8_t minor_version) : ELObject(1, Pro
 	profile[0xd6] = new uint8_t[0x20]{0x01, 0x00};
 };
 
-void Profile::add(ELObject * object) {
+Profile * Profile::add(ELObject * object) {
 	int i = profile[0xd6][1];
 	if (i >= 10) {
 		ESP_LOGE(TAG, "Possible to regist object less than 11");
-		return;
+		return this;
 	}
 	profile[0xd6][2 + i * 3 + 0] = object->group_id;
 	profile[0xd6][2 + i * 3 + 1] = object->class_id;
@@ -80,6 +80,8 @@ void Profile::add(ELObject * object) {
 
 	profile[0xd6][1] += 1;
 	profile[0xd6][0] += 3;
+
+	return this;
 };
 
 uint8_t Profile::set(uint8_t* epcs, uint8_t count) { return 0; }

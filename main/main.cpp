@@ -68,7 +68,8 @@ void app_main(void) {
 				}
 			});
 		}
-	}, "ButtonCheck", 2048, nullptr, 1, nullptr, 1);
+	},
+					    "ButtonCheck", 2048, nullptr, 1, nullptr, 1);
 
 	vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
 
@@ -99,14 +100,19 @@ void app_main(void) {
 
 	Profile profile = Profile(1, 13);
 
-	PV * pv = new PV(1);
-	profile.add(pv);
+//	PV *pv = new PV(1);
+//	profile.add(pv);
 
-	EVPS * evps = new EVPS(3);
-	profile.add(evps);
+//	EVPS *evps = new EVPS(3);
+//	profile.add(evps);
 
-	Battery * battery = new Battery(4);
-	profile.add(battery);
+	Battery *battery = new Battery(4);
+//	profile.add(battery);
+
+	(&profile)
+//	    ->add(pv)
+//	    ->add(evps)
+	    ->add(battery);
 
 	/*
 	evps->set_update_mode_cb([](EVPS::Mode current_mode, EVPS::Mode request_mode) {
@@ -147,7 +153,7 @@ void app_main(void) {
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 		if (--pv_update_count < 0) {
 			pv_update_count = pv_reset_count;
-			pv->update();
+//			pv->update();
 		}
 
 		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
@@ -170,7 +176,7 @@ void app_main(void) {
 						profile.send(udp, &remote_addr);
 						continue;
 					}
-					break;
+					break;/*
 				case PV::class_u16:
 					epc_res_count = pv->process(p, epcs);
 					if (epc_res_count > 0) {
@@ -184,7 +190,7 @@ void app_main(void) {
 						evps->send(udp, &remote_addr);
 						continue;
 					}
-					break;
+					break;*/
 				case Battery::class_u16:
 					epc_res_count = battery->process(p, epcs);
 					if (epc_res_count > 0) {
