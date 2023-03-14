@@ -3,7 +3,7 @@
 #include "battery-object.hpp"
 
 
-static const char *TAG = "Battery";
+const char Battery::TAG[] = "Battery";
 
 Battery::Battery(uint8_t instance) : ELObject(instance, 0x7d02), battery{} {
 	//// スーパークラス

@@ -10,7 +10,7 @@
 
 #include <esp_log.h>
 
-static const char* TAG = "UDPSock";
+const char UDPSocket::TAG[] = "UDPSock";
 
 UDPSocket::UDPSocket() {
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);

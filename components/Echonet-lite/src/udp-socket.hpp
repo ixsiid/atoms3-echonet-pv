@@ -8,6 +8,7 @@
 
 class UDPSocket {
     private:
+	static const char TAG[8];
 	int sock;
 
     public:

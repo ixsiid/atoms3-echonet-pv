@@ -23,6 +23,9 @@ class ELObject {
 	} elpacket_t;
 #pragma pack()
 
+    private:
+	static const char TAG[8];
+
     protected:
 	static uint8_t buffer[ELConstant::EL_BUFFER_SIZE + 32];
 	static size_t buffer_length;
@@ -50,6 +53,7 @@ class ELObject {
 
 class Profile : public ELObject {
     private:
+	static const char TAG[8];
 	uint8_t* profile[0xff];
 
 	uint8_t get(uint8_t* epcs, uint8_t epc_count);
@@ -58,7 +62,7 @@ class Profile : public ELObject {
     public:
 	Profile(uint8_t major_version, uint8_t minor_version);
 
-	void add(ELObject* object);
+	void add(ELObject& object);
 
 	/* Stack over flowになって起動できない
 	Profile operator<<(ELObject * object) {

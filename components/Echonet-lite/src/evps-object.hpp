@@ -17,6 +17,8 @@ typedef EVPS_Mode (*update_mode_cb_t)(EVPS_Mode current_mode, EVPS_Mode request_
 
 class EVPS : public ELObject {
     private:
+	static const char TAG[8];
+
 	uint8_t* evps[0xff];
 
 	uint8_t get(uint8_t* epcs, uint8_t epc_count);

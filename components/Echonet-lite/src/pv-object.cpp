@@ -2,7 +2,7 @@
 #include <esp_netif_ip_addr.h>
 #include "pv-object.hpp"
 
-static const char* TAG = "  EL PV";
+const char PV::TAG[] = "  EL PV";
 
 PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 	timer = xTaskGetTickCount();
@@ -68,7 +68,7 @@ PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 	pv[0xd1] = new uint8_t[0x02]{0x01, 0x44};
 	
 	pv[0xe0] = new uint8_t[0x03]{0x02, 0x00, 0x00};
-	pv[0xe1] = new uint8_t[0x05]{0x04, 0x00, 0x00, 0x00, 0x01};
+	pv[0xe1] = new uint8_t[0x05]{0x04, 0x00, 0x00, 0x00, 0x00};
 	pv[0xe8] = new uint8_t[0x03]{0x02, 0x75, 0x30};
 };
 

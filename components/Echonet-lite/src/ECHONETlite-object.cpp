@@ -4,7 +4,7 @@
 
 /// ELObject
 
-static const char* TAG = "  EL Obj";
+const char ELObject::TAG[] = " EL Obj";
 
 uint8_t ELObject::buffer[]	    = {};
 size_t ELObject::buffer_length    = sizeof(elpacket_t);
@@ -54,7 +54,7 @@ bool ELObject::process(const elpacket_t* recv, uint8_t* epcs) {
 };
 
 //// Profile
-static const char* TAG_P = " EL Prof";
+const char Profile::TAG[] = "EL Prof";
 
 // Versionは、ECHONET lite規格書のVersion
 // not 機器オブジェクト詳細規定
@@ -68,15 +68,15 @@ Profile::Profile(uint8_t major_version, uint8_t minor_version) : ELObject(1, 0xf
 	profile[0xd6] = new uint8_t[0x20]{0x01, 0x00};
 };
 
-void Profile::add(ELObject* object) {
+void Profile::add(ELObject& object) {
 	int i = profile[0xd6][1];
 	if (i >= 10) {
-		ESP_LOGE(TAG_P, "Possible to regist object less than 11");
+		ESP_LOGE(TAG, "Possible to regist object less than 11");
 		return;
 	}
-	profile[0xd6][2 + i * 3 + 0] = object->group_id;
-	profile[0xd6][2 + i * 3 + 1] = object->class_id;
-	profile[0xd6][2 + i * 3 + 2] = object->instance;
+	profile[0xd6][2 + i * 3 + 0] = object.group_id;
+	profile[0xd6][2 + i * 3 + 1] = object.class_id;
+	profile[0xd6][2 + i * 3 + 2] = object.instance;
 
 	profile[0xd6][1] += 1;
 	profile[0xd6][0] += 3;
@@ -85,7 +85,7 @@ void Profile::add(ELObject* object) {
 uint8_t Profile::set(uint8_t* epcs, uint8_t count) { return 0; }
 
 uint8_t Profile::get(uint8_t* epcs, uint8_t count) {
-	ESP_LOGI(TAG_P, "Profile: get %d", count);
+	ESP_LOGI(TAG, "Profile: get %d", count);
 	p->src_device_class = class_group;
 	p->src_device_id	= instance;
 
@@ -96,13 +96,13 @@ uint8_t Profile::get(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
-		ESP_LOGI(TAG_P, "EPC 0x%02x [%d]", epc, len);
+		ESP_LOGI(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (profile[epc] == nullptr) return 0;
 
 		if (len > 0) {
-			ESP_LOG_BUFFER_HEXDUMP(TAG_P, t, len, ESP_LOG_INFO);
+			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 

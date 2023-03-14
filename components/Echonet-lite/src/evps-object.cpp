@@ -2,7 +2,7 @@
 #include <esp_netif_ip_addr.h>
 #include "evps-object.hpp"
 
-static const char* TAG = "EL EVPS";
+const char EVPS::TAG[] = "EL EVPS";
 
 EVPS::EVPS(uint8_t instance) : ELObject(instance, 0x7e02), evps{} {
 	update_mode_cb	 = nullptr;

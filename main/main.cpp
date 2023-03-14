@@ -111,13 +111,13 @@ void app_main(void) {
 
 	Profile profile = Profile(1, 13);
 
-	PV *pv = new PV(1);
+	PV pv = PV(1);
 	profile.add(pv); // profile << pv;
 
-	EVPS *evps = new EVPS(3);
+	EVPS evps = EVPS(3);
 	profile.add(evps);
 
-	Battery *battery = new Battery(4);
+	Battery battery = Battery(4);
 	profile.add(battery);
 
 	/*
@@ -159,7 +159,7 @@ void app_main(void) {
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 		if (--pv_update_count < 0) {
 			pv_update_count = pv_reset_count;
-			pv->update();
+			pv.update();
 		}
 
 		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
@@ -184,16 +184,16 @@ void app_main(void) {
 					}
 					break;
 				case 0x7902: // PV
-					epc_res_count = pv->process(p, epcs);
+					epc_res_count = pv.process(p, epcs);
 					if (epc_res_count > 0) {
-						pv->send(udp, &remote_addr);
+						pv.send(udp, &remote_addr);
 						continue;
 					}
 					break;
 				case 0x7e02: // EVPS
-					epc_res_count = evps->process(p, epcs);
+					epc_res_count = evps.process(p, epcs);
 					if (epc_res_count > 0) {
-						evps->send(udp, &remote_addr);
+						evps.send(udp, &remote_addr);
 						continue;
 					}
 					break;
