@@ -13,18 +13,13 @@ uint8_t* ELObject::epc_start	 = buffer + sizeof(elpacket_t);
 
 uint8_t* ELObject::maker_code = new uint8_t[4]{0x03, 0xff, 0xff, 0xff};  // 開発用
 
-ELObject::ELObject() {
+ELObject::ELObject(uint8_t instance, uint16_t class_group) : 
+	instance(instance), class_group(class_group),
+	class_id(class_group >> 8), group_id(class_group & 0xff) {
 	p->_1081			= 0x8110;
 	p->dst_device_class = ELObject::CLASS_HEMS;
 	p->dst_device_id	= 0x01;
 }
-
-uint8_t ELObject::group_id() { return _group_id; }
-uint8_t ELObject::class_id() { return _class_id; }
-uint8_t ELObject::instance() { return _instance; }
-
-uint8_t ELObject::major_version() { return _major_version; }
-uint8_t ELObject::minor_version() { return _minor_version; }
 
 int ELObject::send(UDPSocket* udp, const esp_ip_addr_t* addr) {
 	int len = udp->write(addr, EL_PORT, buffer, buffer_length);
@@ -42,8 +37,8 @@ bool ELObject::process(const elpacket_t* recv, uint8_t* epcs) {
 
 		if (recv->esv == 0x60) return false;
 
-		p->src_device_class = (_class_id << 8) | _group_id;
-		p->src_device_id = _instance;
+		p->src_device_class = class_group;
+		p->src_device_id = instance;
 
 		if (p->epc_count > 0) {
 			p->esv = recv->esv + 0x10;
@@ -67,26 +62,33 @@ bool ELObject::process(const elpacket_t* recv, uint8_t* epcs) {
 
 // Versionは、ECHONET lite規格書のVersion
 // not 機器オブジェクト詳細規定
-Profile::Profile(ELObject * object) : ELObject(), profile{} {
-	_instance = 1;
-	_class_id = 0xf0;
-	_group_id = 0x0e;	 // Profileオブジェクト
-
+Profile::Profile(uint8_t major_version, uint8_t minor_version) : ELObject(1, 0xf00e), profile{} {
 	profile[0x8a] = maker_code;
-	profile[0x82] = new uint8_t[0x05]{0x04, object->major_version(), object->minor_version(), 0x01, 0x00};	 // 1.10 type 1
+	profile[0x82] = new uint8_t[0x05]{0x04, major_version, minor_version, 0x01, 0x00};	 // 1.10 type 1
 	profile[0x83] = new uint8_t[0x12]{0x11, 0xfe, 0x02, 0x03, 0x05,
 							    0x05, 0x06, 0x07, 0x08, 0x09,
 							    0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
 							    0x0f, 0x10, 0x12};			 // 識別ID
-	profile[0xd6] = new uint8_t[0x05]{0x04, 0x01, object->group_id(), object->class_id(), object->instance()};
+	profile[0xd6] = new uint8_t[0x05]{0x01, 0x00};
+};
+
+void Profile::add(ELObject * object) {
+	int i = profile[0xd6][1]++;
+	ESP_LOGI(___tag, "i: %d", i);
+	profile[0xd6][2 + i * 3 + 0] = object->group_id;
+	profile[0xd6][2 + i * 3 + 1] = object->class_id;
+	profile[0xd6][2 + i * 3 + 2] = object->instance;
+	profile[0xd6][0] += 3;
+	
+	ESP_LOG_BUFFER_HEXDUMP("d6", profile[0xd6], profile[0xd6][0] + 1, ESP_LOG_INFO);
 };
 
 uint8_t Profile::set(uint8_t* epcs, uint8_t count) { return 0; }
 
 uint8_t Profile::get(uint8_t* epcs, uint8_t count) {
 	ESP_LOGI(___tag, "Profile: get %d", count);
-	p->src_device_class = (_class_id << 8) | _group_id;
-	p->src_device_id	= _instance;
+	p->src_device_class = class_group;
+	p->src_device_id	= instance;
 
 	uint8_t* t = epcs;
 	uint8_t* n = epc_start;

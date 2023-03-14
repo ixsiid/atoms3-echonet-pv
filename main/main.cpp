@@ -26,6 +26,7 @@
 #include <wifiManager.hpp>
 #include <udp-socket.hpp>
 #include <pv-object.hpp>
+#include <evps-object.hpp>
 
 #include "wifi_credential.h"
 /**
@@ -107,9 +108,13 @@ void app_main(void) {
 
 	int packetSize;
 
-	PV *pv = new PV(1);
+	Profile profile = Profile(1, 13);
 
-	Profile *profile = new Profile(pv);
+	PV *pv = new PV(1);
+	profile.add(pv); // profile << pv;
+
+	EVPS *evps = new EVPS(3);
+	profile.add(evps);
 
 	/*
 	evps->set_update_mode_cb([](EVPS_Mode current_mode, EVPS_Mode request_mode) {
@@ -160,10 +165,10 @@ void app_main(void) {
 
 			uint8_t epc_res_count = 0;
 			switch (p->dst_device_class) {
-				case 0xf00e:
-					epc_res_count = profile->process(p, epcs);
+				case 0xf00e: // Profile
+					epc_res_count = profile.process(p, epcs);
 					if (epc_res_count > 0) {
-						profile->send(udp, &remote_addr);
+						profile.send(udp, &remote_addr);
 						continue;
 					}
 					break;
@@ -171,6 +176,13 @@ void app_main(void) {
 					epc_res_count = pv->process(p, epcs);
 					if (epc_res_count > 0) {
 						pv->send(udp, &remote_addr);
+						continue;
+					}
+					break;
+				case 0x7e02: // EVPS
+					epc_res_count = evps->process(p, epcs);
+					if (epc_res_count > 0) {
+						evps->send(udp, &remote_addr);
 						continue;
 					}
 					break;

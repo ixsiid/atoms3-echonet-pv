@@ -13,7 +13,7 @@ enum class PV_Mode : uint8_t {
 	Unacceptable         = 0x00,
 };
 
-typedef PV_Mode (*update_mode_cb_t)(PV_Mode current_mode, PV_Mode request_mode);
+typedef PV_Mode (*update_mode_pv_cb_t)(PV_Mode current_mode, PV_Mode request_mode);
 
 class PV : public ELObject {
     private:
@@ -22,10 +22,10 @@ class PV : public ELObject {
 	uint8_t get(uint8_t* epcs, uint8_t epc_count);
 	uint8_t set(uint8_t* epcs, uint8_t epc_count);
 
-	update_mode_cb_t update_mode_cb;
+	update_mode_pv_cb_t update_mode_cb;
 
     public:
 	PV(uint8_t instance);
-	void set_update_mode_cb(update_mode_cb_t cb);
+	void set_update_mode_cb(update_mode_pv_cb_t cb);
 	void notify_mode();
 };

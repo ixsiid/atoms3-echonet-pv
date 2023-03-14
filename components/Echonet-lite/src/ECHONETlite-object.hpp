@@ -32,24 +32,18 @@ class ELObject {
 
 	static const uint16_t CLASS_HEMS = 0xff05;
 
-	uint8_t _instance;
-	uint8_t _class_id;
-	uint8_t _group_id;
-	uint8_t _major_version;
-	uint8_t _minor_version;
-
 	virtual uint8_t get(uint8_t* epcs, uint8_t epc_count) = 0;
 	virtual uint8_t set(uint8_t* epcs, uint8_t epc_count) = 0;
 
     public:
-	ELObject();
-	uint8_t group_id();
-	uint8_t class_id();
-	uint8_t instance();
-	uint8_t major_version();
-	uint8_t minor_version();
-	int send(UDPSocket* udp, const esp_ip_addr_t* addr);
+	const uint8_t instance;
+	const uint16_t class_group;
+	const uint8_t class_id;
+	const uint8_t group_id;
 
+	ELObject(uint8_t instance, uint16_t class_group);
+
+	int send(UDPSocket* udp, const esp_ip_addr_t* addr);
 	bool process(const elpacket_t* recv, uint8_t* epc_array);
 };
 
@@ -63,5 +57,21 @@ class Profile : public ELObject {
 	uint8_t set(uint8_t* epcs, uint8_t epc_count);
 
     public:
-	Profile(ELObject * object);
+	Profile(uint8_t major_version, uint8_t minor_version);
+
+	void add(ELObject * object);
+	
+	/* Stack over flowになって起動できない
+	Profile operator<<(ELObject * object) {
+		this->add(object);
+		int i = profile[0xd6][1]++;
+		ESP_LOGI(___tag, "i: %d", i);
+		profile[0xd6][2 + i * 3 + 0] = object->group_id;
+		profile[0xd6][2 + i * 3 + 0] = object->class_id;
+		profile[0xd6][2 + i * 3 + 0] = object->instance;
+		profile[0xd6][0] += 3;
+		
+		ESP_LOG_BUFFER_HEXDUMP("d6", profile[0xd6], profile[0xd6][1] + 1, ESP_LOG_INFO);
+		return *this;
+	}; */
 };

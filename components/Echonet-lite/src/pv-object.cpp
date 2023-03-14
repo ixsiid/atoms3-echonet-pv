@@ -7,16 +7,8 @@
 #undef ___tag
 #define ___tag "EL PV"
 
-PV::PV(uint8_t instance) : ELObject(), pv{} {
+PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 	update_mode_cb	 = nullptr;
-	this->_instance = instance;
-
-	_class_id	= 0x79;
-	_group_id = 0x02;  // PVオブジェクト
-
-	_major_version = 1;
-	_minor_version = 10;
-
 
 	//// スーパークラス
 	// 設置場所
@@ -87,8 +79,8 @@ PV::PV(uint8_t instance) : ELObject(), pv{} {
 
 uint8_t PV::set(uint8_t* epcs, uint8_t count) {
 	// ESP_LOGI(___tag, "PV: get %d", count);
-	p->src_device_class = (_class_id << 8) | _group_id;
-	p->src_device_id	= _instance;
+	p->src_device_class = class_group;
+	p->src_device_id	= instance;
 
 	uint8_t* t = epcs;
 	uint8_t* n = epc_start;
@@ -138,8 +130,8 @@ uint8_t PV::set(uint8_t* epcs, uint8_t count) {
 
 uint8_t PV::get(uint8_t* epcs, uint8_t count) {
 	ESP_LOGI(___tag, "PV: get %d", count);
-	p->src_device_class = (_class_id << 8) | _group_id;
-	p->src_device_id	= _instance;
+	p->src_device_class = class_group;
+	p->src_device_id	= instance;
 
 	uint8_t* t = epcs;
 	uint8_t* n = epc_start;
@@ -169,7 +161,7 @@ uint8_t PV::get(uint8_t* epcs, uint8_t count) {
 	return res_count;
 };
 
-void PV::set_update_mode_cb(update_mode_cb_t cb) {
+void PV::set_update_mode_cb(update_mode_pv_cb_t cb) {
 	update_mode_cb = cb;
 };
 
