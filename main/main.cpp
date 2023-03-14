@@ -20,8 +20,6 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 
-#include <M5GFX.h>
-
 #include <button.hpp>
 #include <wifiManager.hpp>
 #include <udp-socket.hpp>
@@ -35,16 +33,14 @@
 #define WIFI_PASSWORD "your_wifi_password"
  */
 
-#define tag "PV"
-
-M5GFX display;
-
 extern "C" {
 void app_main();
 }
 
 void app_main(void) {
-	ESP_LOGI(tag, "Start");
+	static const char TAG[] = "PV";
+	ESP_LOGI(TAG, "Start");
+
 	esp_err_t ret;
 
 	/* Initialize NVS — it is used to store PHY calibration data */
@@ -54,13 +50,6 @@ void app_main(void) {
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
-
-	display.init();
-	display.startWrite();
-
-	display.setBrightness(64);
-	display.setColorDepth(lgfx::v1::color_depth_t::rgb565_2Byte);
-	display.fillScreen(TFT_GREENYELLOW);
 
 	// ATOMS3
 	const uint8_t buttonPins[] = {41};
@@ -74,7 +63,7 @@ void app_main(void) {
 			button->check(nullptr, [&](uint8_t pin) {
 				switch (pin) {
 					case 41:
-						ESP_LOGI(tag, "released gpio 41");
+						ESP_LOGI(TAG, "released gpio 41");
 						break;
 				}
 			});
@@ -84,10 +73,9 @@ void app_main(void) {
 	vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
 
 	ret = WiFi::Connect(SSID, WIFI_PASSWORD);
-	if (!ret)
-		ESP_LOGI("SBC", "IP: %s", WiFi::get_address());
-	else
-		display.fillScreen(TFT_RED);
+	ESP_ERROR_CHECK(ret);
+	
+	ESP_LOGI(TAG, "IP: %s", WiFi::get_address());
 
 	UDPSocket *udp = new UDPSocket();
 
@@ -96,15 +84,15 @@ void app_main(void) {
 	_multi.u_addr.ip4.addr = ipaddr_addr(ELConstant::EL_MULTICAST_IP);
 
 	if (udp->beginReceive(ELConstant::EL_PORT)) {
-		ESP_LOGI(tag, "EL.udp.begin successful.");
+		ESP_LOGI(TAG, "EL.udp.begin successful.");
 	} else {
-		ESP_LOGI(tag, "Reseiver udp.begin failed.");	 // localPort
+		ESP_LOGI(TAG, "Reseiver udp.begin failed.");	 // localPort
 	}
 
 	if (udp->beginMulticastReceive(&_multi)) {
-		ESP_LOGI(tag, "EL.udp.beginMulticast successful.");
+		ESP_LOGI(TAG, "EL.udp.beginMulticast successful.");
 	} else {
-		ESP_LOGI(tag, "Reseiver EL.udp.beginMulticast failed.");  // localPort
+		ESP_LOGI(TAG, "Reseiver EL.udp.beginMulticast failed.");  // localPort
 	}
 
 	int packetSize;
@@ -112,13 +100,15 @@ void app_main(void) {
 	Profile profile = Profile(1, 13);
 
 	PV pv = PV(1);
-	profile.add(pv); // profile << pv;
+	// profile.add(pv);
 
 	EVPS evps = EVPS(3);
-	profile.add(evps);
+	// profile.add(evps);
 
 	Battery battery = Battery(4);
-	profile.add(battery);
+	// profile.add(battery);
+
+	profile << pv << evps << battery;
 
 	/*
 	evps->set_update_mode_cb([](EVPS_Mode current_mode, EVPS_Mode request_mode) {
@@ -197,8 +187,15 @@ void app_main(void) {
 						continue;
 					}
 					break;
+				case 0x7d02: // Battery
+					epc_res_count = battery.process(p, epcs);
+					if (epc_res_count > 0) {
+						battery.send(udp, &remote_addr);
+						continue;
+					}
+					break;
 				default:
-					ESP_LOGE("EL Packet", "Unknown class access: %hx", p->dst_device_class);
+					ESP_LOGE(TAG, "Unknown class access: %hx", p->dst_device_class);
 					break;
 			}
 		}

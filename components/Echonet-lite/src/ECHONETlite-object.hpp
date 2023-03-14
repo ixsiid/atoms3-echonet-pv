@@ -64,17 +64,8 @@ class Profile : public ELObject {
 
 	void add(ELObject& object);
 
-	/* Stack over flowになって起動できない
-	Profile operator<<(ELObject * object) {
+	Profile operator<<(ELObject& object) {
 		this->add(object);
-		int i = profile[0xd6][1]++;
-		ESP_LOGI(___tag, "i: %d", i);
-		profile[0xd6][2 + i * 3 + 0] = object->group_id;
-		profile[0xd6][2 + i * 3 + 0] = object->class_id;
-		profile[0xd6][2 + i * 3 + 0] = object->instance;
-		profile[0xd6][0] += 3;
-
-		ESP_LOG_BUFFER_HEXDUMP("d6", profile[0xd6], profile[0xd6][1] + 1, ESP_LOG_INFO);
 		return *this;
-	}; */
+	};
 };
