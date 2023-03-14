@@ -2,10 +2,7 @@
 #include <esp_netif_ip_addr.h>
 #include "pv-object.hpp"
 
-//// PV
-
-#undef ___tag
-#define ___tag "EL PV"
+static const char* TAG = "  EL PV";
 
 PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 	//// スーパークラス
@@ -41,8 +38,7 @@ PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 							 0b00000000,
 							 0b00000000};
 
-	// ^^^^
-
+	// 固有クラス
 	pv[0x80] = new uint8_t[0x02]{0x01, 0x30};
 	pv[0x83] = new uint8_t[0x12]{0x11, 0xfe, maker_code[0], maker_code[1], maker_code[2], 0x0d,
 	                                         0x0c, 0x0b, 0x0a, 0x09,
@@ -76,7 +72,7 @@ PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
 };
 
 uint8_t PV::set(uint8_t* epcs, uint8_t count) {
-	// ESP_LOGI(___tag, "PV: get %d", count);
+	// ESP_LOGI(TAG, "PV: get %d", count);
 	p->src_device_class = class_group;
 	p->src_device_id	= instance;
 
@@ -87,7 +83,7 @@ uint8_t PV::set(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
-		ESP_LOGI(___tag, "EPC 0x%02x [%d]", epc, len);
+		ESP_LOGI(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (pv[epc] == nullptr) return 0;
@@ -100,7 +96,7 @@ uint8_t PV::set(uint8_t* epcs, uint8_t count) {
 		}
 
 		if (len > 0) {
-			ESP_LOG_BUFFER_HEXDUMP(___tag, t, len, ESP_LOG_INFO);
+			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 
@@ -117,7 +113,7 @@ uint8_t PV::set(uint8_t* epcs, uint8_t count) {
 }
 
 uint8_t PV::get(uint8_t* epcs, uint8_t count) {
-	ESP_LOGI(___tag, "PV: get %d", count);
+	ESP_LOGI(TAG, "PV: get %d", count);
 	p->src_device_class = class_group;
 	p->src_device_id	= instance;
 
@@ -128,13 +124,13 @@ uint8_t PV::get(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
- 		ESP_LOGD(___tag, "EPC 0x%02x [%d]", epc, len);
+ 		ESP_LOGD(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (pv[epc] == nullptr) return 0;
 
 		if (len > 0) {
- 			ESP_LOG_BUFFER_HEXDUMP(___tag, t, len, ESP_LOG_INFO);
+ 			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 

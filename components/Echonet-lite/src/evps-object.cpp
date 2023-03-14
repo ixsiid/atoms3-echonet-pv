@@ -2,10 +2,7 @@
 #include <esp_netif_ip_addr.h>
 #include "evps-object.hpp"
 
-	//// EVPS
-
-#undef ___tag
-#define ___tag "EL EVPS"
+static const char* TAG = "EL EVPS";
 
 EVPS::EVPS(uint8_t instance) : ELObject(instance, 0x7e02), evps{} {
 	update_mode_cb	 = nullptr;
@@ -83,7 +80,7 @@ EVPS::EVPS(uint8_t instance) : ELObject(instance, 0x7e02), evps{} {
 };
 
 uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
-	// ESP_LOGI(___tag, "EVPS: get %d", count);
+	// ESP_LOGI(TAG, "EVPS: get %d", count);
 	p->src_device_class = class_group;
 	p->src_device_id	= instance;
 
@@ -94,7 +91,7 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
-		ESP_LOGI(___tag, "EPC 0x%02x [%d]", epc, len);
+		ESP_LOGI(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (evps[epc] == nullptr) return 0;
@@ -117,7 +114,7 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 		}
 
 		if (len > 0) {
-			ESP_LOG_BUFFER_HEXDUMP(___tag, t, len, ESP_LOG_INFO);
+			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 
@@ -134,7 +131,7 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 }
 
 uint8_t EVPS::get(uint8_t* epcs, uint8_t count) {
-	ESP_LOGI(___tag, "EVPS: get %d", count);
+	ESP_LOGI(TAG, "EVPS: get %d", count);
 	p->src_device_class = class_group;
 	p->src_device_id	= instance;
 
@@ -145,13 +142,13 @@ uint8_t EVPS::get(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
- 		ESP_LOGD(___tag, "EPC 0x%02x [%d]", epc, len);
+ 		ESP_LOGD(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (evps[epc] == nullptr) return 0;
 
 		if (len > 0) {
- 			ESP_LOG_BUFFER_HEXDUMP(___tag, t, len, ESP_LOG_INFO);
+ 			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 

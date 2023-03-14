@@ -59,8 +59,8 @@ class Profile : public ELObject {
     public:
 	Profile(uint8_t major_version, uint8_t minor_version);
 
-	void add(ELObject * object);
-	
+	void add(ELObject* object);
+
 	/* Stack over flowになって起動できない
 	Profile operator<<(ELObject * object) {
 		this->add(object);
@@ -70,7 +70,7 @@ class Profile : public ELObject {
 		profile[0xd6][2 + i * 3 + 0] = object->class_id;
 		profile[0xd6][2 + i * 3 + 0] = object->instance;
 		profile[0xd6][0] += 3;
-		
+
 		ESP_LOG_BUFFER_HEXDUMP("d6", profile[0xd6], profile[0xd6][1] + 1, ESP_LOG_INFO);
 		return *this;
 	}; */

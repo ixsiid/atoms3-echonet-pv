@@ -2,10 +2,8 @@
 #include <esp_netif_ip_addr.h>
 #include "battery-object.hpp"
 
-//// Battery
 
-#undef ___tag
-#define ___tag "EL Battery"
+static const char *TAG = "Battery";
 
 Battery::Battery(uint8_t instance) : ELObject(instance, 0x7d02), battery{} {
 	//// スーパークラス
@@ -79,7 +77,6 @@ Battery::Battery(uint8_t instance) : ELObject(instance, 0x7d02), battery{} {
 };
 
 uint8_t Battery::set(uint8_t* epcs, uint8_t count) {
-	// ESP_LOGI(___tag, "Battery: get %d", count);
 	p->src_device_class = class_group;
 	p->src_device_id	= instance;
 
@@ -90,7 +87,7 @@ uint8_t Battery::set(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
-		ESP_LOGI(___tag, "EPC 0x%02x [%d]", epc, len);
+		ESP_LOGI(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (battery[epc] == nullptr) return 0;
@@ -102,7 +99,7 @@ uint8_t Battery::set(uint8_t* epcs, uint8_t count) {
 		}
 
 		if (len > 0) {
-			ESP_LOG_BUFFER_HEXDUMP(___tag, t, len, ESP_LOG_INFO);
+			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 
@@ -119,7 +116,7 @@ uint8_t Battery::set(uint8_t* epcs, uint8_t count) {
 }
 
 uint8_t Battery::get(uint8_t* epcs, uint8_t count) {
-	ESP_LOGI(___tag, "Battery: get %d", count);
+	ESP_LOGI(TAG, "Battery: get %d", count);
 	p->src_device_class = class_group;
 	p->src_device_id	= instance;
 
@@ -130,13 +127,13 @@ uint8_t Battery::get(uint8_t* epcs, uint8_t count) {
 	for (res_count = 0; res_count < count; res_count++) {
 		uint8_t epc = t[0];
 		uint8_t len = t[1];
- 		ESP_LOGD(___tag, "EPC 0x%02x [%d]", epc, len);
+ 		ESP_LOGD(TAG, "EPC 0x%02x [%d]", epc, len);
 		t += 2;
 
 		if (battery[epc] == nullptr) return 0;
 
 		if (len > 0) {
- 			ESP_LOG_BUFFER_HEXDUMP(___tag, t, len, ESP_LOG_INFO);
+ 			ESP_LOG_BUFFER_HEXDUMP(TAG, t, len, ESP_LOG_INFO);
 			t += len;
 		}
 
