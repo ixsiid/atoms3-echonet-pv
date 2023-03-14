@@ -53,7 +53,7 @@ void app_main(void) {
 
 	// ATOMS3
 	const uint8_t buttonPins[] = {41};
-	static Button *button = new Button(buttonPins, sizeof(buttonPins));
+	static Button *button	  = new Button(buttonPins, sizeof(buttonPins));
 
 	xTaskCreatePinnedToCore([](void *_) {
 		while (true) {
@@ -74,7 +74,7 @@ void app_main(void) {
 
 	ret = WiFi::Connect(SSID, WIFI_PASSWORD);
 	ESP_ERROR_CHECK(ret);
-	
+
 	ESP_LOGI(TAG, "IP: %s", WiFi::get_address());
 
 	UDPSocket *udp = new UDPSocket();
@@ -99,16 +99,14 @@ void app_main(void) {
 
 	Profile profile = Profile(1, 13);
 
-	PV pv = PV(1);
-	// profile.add(pv);
+	PV * pv = new PV(1);
+	profile.add(pv);
 
-	EVPS evps = EVPS(3);
-	// profile.add(evps);
+	EVPS * evps = new EVPS(3);
+	profile.add(evps);
 
-	Battery battery = Battery(4);
-	// profile.add(battery);
-
-	profile << pv << evps << battery;
+	Battery * battery = new Battery(4);
+	profile.add(battery);
 
 	/*
 	evps->set_update_mode_cb([](EVPS::Mode current_mode, EVPS::Mode request_mode) {
@@ -135,7 +133,7 @@ void app_main(void) {
 
 	uint8_t rBuffer[ELConstant::EL_BUFFER_SIZE];
 	ELObject::elpacket_t *p = (ELObject::elpacket_t *)rBuffer;
-	uint8_t *epcs = rBuffer + sizeof(ELObject::elpacket_t);
+	uint8_t *epcs		    = rBuffer + sizeof(ELObject::elpacket_t);
 
 	esp_ip_addr_t remote_addr;
 	// esp_ip_addr_t multi_addr;
@@ -143,13 +141,13 @@ void app_main(void) {
 	// ESP_LOGI("Multicast addr", "%x", multi_addr.u_addr.ip4.addr);
 
 	const int pv_reset_count = 600;
-	int pv_update_count = pv_reset_count;
+	int pv_update_count		= pv_reset_count;
 
 	while (true) {
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 		if (--pv_update_count < 0) {
 			pv_update_count = pv_reset_count;
-			pv.update();
+			pv->update();
 		}
 
 		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
@@ -166,31 +164,31 @@ void app_main(void) {
 
 			uint8_t epc_res_count = 0;
 			switch (p->dst_device_class) {
-				case Profile::class_u16: // Profile
+				case Profile::class_u16:	 // Profile
 					epc_res_count = profile.process(p, epcs);
 					if (epc_res_count > 0) {
 						profile.send(udp, &remote_addr);
 						continue;
 					}
 					break;
-				case PV::class_u16: // PV
-					epc_res_count = pv.process(p, epcs);
+				case PV::class_u16:
+					epc_res_count = pv->process(p, epcs);
 					if (epc_res_count > 0) {
-						pv.send(udp, &remote_addr);
+						pv->send(udp, &remote_addr);
 						continue;
 					}
 					break;
-				case EVPS::class_u16: // EVPS
-					epc_res_count = evps.process(p, epcs);
+				case EVPS::class_u16:
+					epc_res_count = evps->process(p, epcs);
 					if (epc_res_count > 0) {
-						evps.send(udp, &remote_addr);
+						evps->send(udp, &remote_addr);
 						continue;
 					}
 					break;
-				case Battery::class_u16: // Battery
-					epc_res_count = battery.process(p, epcs);
+				case Battery::class_u16:
+					epc_res_count = battery->process(p, epcs);
 					if (epc_res_count > 0) {
-						battery.send(udp, &remote_addr);
+						battery->send(udp, &remote_addr);
 						continue;
 					}
 					break;

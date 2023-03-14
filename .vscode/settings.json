@@ -31,6 +31,7 @@
 		"list": "cpp",
 		"vector": "cpp",
 		"xmemory": "cpp",
-		"memory": "cpp"
+		"memory": "cpp",
+		"charconv": "cpp"
 	}
 }
