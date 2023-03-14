@@ -5,7 +5,7 @@
 
 const char Battery::TAG[] = "Battery";
 
-Battery::Battery(uint8_t instance) : ELObject(instance, 0x7d02), battery{} {
+Battery::Battery(uint8_t instance) : ELObject(instance, Battery::class_u16), battery{} {
 	//// スーパークラス
 	// 設置場所
 	battery[0x81] = new uint8_t[0x02]{0x01, 0b01111101}; // その他

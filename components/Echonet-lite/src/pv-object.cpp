@@ -4,7 +4,7 @@
 
 const char PV::TAG[] = "  EL PV";
 
-PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
+PV::PV(uint8_t instance) : ELObject(instance, PV::class_u16), pv{} {
 	timer = xTaskGetTickCount();
 	//// スーパークラス
 	// 設置場所

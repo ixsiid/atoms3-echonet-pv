@@ -166,28 +166,28 @@ void app_main(void) {
 
 			uint8_t epc_res_count = 0;
 			switch (p->dst_device_class) {
-				case 0xf00e: // Profile
+				case Profile::class_u16: // Profile
 					epc_res_count = profile.process(p, epcs);
 					if (epc_res_count > 0) {
 						profile.send(udp, &remote_addr);
 						continue;
 					}
 					break;
-				case 0x7902: // PV
+				case PV::class_u16: // PV
 					epc_res_count = pv.process(p, epcs);
 					if (epc_res_count > 0) {
 						pv.send(udp, &remote_addr);
 						continue;
 					}
 					break;
-				case 0x7e02: // EVPS
+				case EVPS::class_u16: // EVPS
 					epc_res_count = evps.process(p, epcs);
 					if (epc_res_count > 0) {
 						evps.send(udp, &remote_addr);
 						continue;
 					}
 					break;
-				case 0x7d02: // Battery
+				case Battery::class_u16: // Battery
 					epc_res_count = battery.process(p, epcs);
 					if (epc_res_count > 0) {
 						battery.send(udp, &remote_addr);

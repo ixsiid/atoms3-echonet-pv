@@ -4,7 +4,7 @@
 
 const char EVPS::TAG[] = "EL EVPS";
 
-EVPS::EVPS(uint8_t instance) : ELObject(instance, 0x7e02), evps{} {
+EVPS::EVPS(uint8_t instance) : ELObject(instance, EVPS::class_u16), evps{} {
 	update_mode_cb	 = nullptr;
 
 	//// スーパークラス

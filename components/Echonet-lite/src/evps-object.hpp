@@ -10,12 +10,15 @@ enum class EVPS_Mode : uint8_t {
 	Starting			 = 0x48,
 	Auto				 = 0x49,
 	Undefine			 = 0x40,
-	Unacceptable         = 0x00,
+	Unacceptable		 = 0x00,
 };
 
 typedef EVPS_Mode (*update_mode_cb_t)(EVPS_Mode current_mode, EVPS_Mode request_mode);
 
 class EVPS : public ELObject {
+    public:
+	static const uint16_t class_u16 = 0x7e02;
+
     private:
 	static const char TAG[8];
 

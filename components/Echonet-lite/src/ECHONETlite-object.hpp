@@ -52,6 +52,9 @@ class ELObject {
 };
 
 class Profile : public ELObject {
+    public:
+	static const uint16_t class_u16 = 0xf00e;
+
     private:
 	static const char TAG[8];
 	uint8_t* profile[0xff];

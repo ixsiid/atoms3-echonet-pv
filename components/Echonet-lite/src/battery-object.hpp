@@ -2,6 +2,9 @@
 #include "ECHONETlite-object.hpp"
 
 class Battery : public ELObject {
+    public:
+	static const uint16_t class_u16 = 0x7d02;
+
     private:
 	static const char TAG[8];
 	uint8_t* battery[0xff];

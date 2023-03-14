@@ -58,7 +58,7 @@ const char Profile::TAG[] = "EL Prof";
 
 // Versionは、ECHONET lite規格書のVersion
 // not 機器オブジェクト詳細規定
-Profile::Profile(uint8_t major_version, uint8_t minor_version) : ELObject(1, 0xf00e), profile{} {
+Profile::Profile(uint8_t major_version, uint8_t minor_version) : ELObject(1, Profile::class_u16), profile{} {
 	profile[0x8a] = maker_code;
 	profile[0x82] = new uint8_t[0x05]{0x04, major_version, minor_version, 0x01, 0x00};
 	profile[0x83] = new uint8_t[0x12]{0x11, 0xfe, maker_code[0], maker_code[1], maker_code[2], 0x0d,
