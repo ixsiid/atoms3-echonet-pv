@@ -93,9 +93,9 @@ void app_main(void) {
 
 	esp_ip_addr_t _multi;
 	_multi.type		   = ESP_IPADDR_TYPE_V4;
-	_multi.u_addr.ip4.addr = ipaddr_addr(EL_MULTICAST_IP);
+	_multi.u_addr.ip4.addr = ipaddr_addr(ELConstant::EL_MULTICAST_IP);
 
-	if (udp->beginReceive(EL_PORT)) {
+	if (udp->beginReceive(ELConstant::EL_PORT)) {
 		ESP_LOGI(tag, "EL.udp.begin successful.");
 	} else {
 		ESP_LOGI(tag, "Reseiver udp.begin failed.");	 // localPort
@@ -143,9 +143,9 @@ void app_main(void) {
 	});
 	*/
 
-	uint8_t rBuffer[EL_BUFFER_SIZE];
-	elpacket_t *p = (elpacket_t *)rBuffer;
-	uint8_t *epcs = rBuffer + sizeof(elpacket_t);
+	uint8_t rBuffer[ELConstant::EL_BUFFER_SIZE];
+	ELObject::elpacket_t *p = (ELObject::elpacket_t *)rBuffer;
+	uint8_t *epcs = rBuffer + sizeof(ELObject::elpacket_t);
 
 	esp_ip_addr_t remote_addr;
 	// esp_ip_addr_t multi_addr;
@@ -155,7 +155,7 @@ void app_main(void) {
 	while (true) {
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 
-		packetSize = udp->read(rBuffer, EL_BUFFER_SIZE, &remote_addr);
+		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
 
 		if (packetSize > 0) {
 			if (epcs[0] == 0xda || true) {
@@ -164,7 +164,7 @@ void app_main(void) {
 					    p->src_device_class, p->src_device_id,
 					    p->dst_device_class, p->dst_device_id,
 					    p->esv, p->epc_count);
-				ESP_LOG_BUFFER_HEXDUMP("EL Packet", epcs, packetSize - sizeof(elpacket_t), ESP_LOG_INFO);
+				ESP_LOG_BUFFER_HEXDUMP("EL Packet", epcs, packetSize - sizeof(ELObject::elpacket_t), ESP_LOG_INFO);
 			}
 
 			uint8_t epc_res_count = 0;

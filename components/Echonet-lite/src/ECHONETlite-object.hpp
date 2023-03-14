@@ -1,29 +1,30 @@
 #pragma once
 #include "udp-socket.hpp"
 
-#pragma pack(1)
-
-typedef struct {
-	uint16_t _1081;
-	uint16_t packet_id;
-	uint16_t src_device_class;
-	uint8_t src_device_id;
-	uint16_t dst_device_class;
-	uint8_t dst_device_id;
-	uint8_t esv;
-	uint8_t epc_count;
-} elpacket_t;
-
-#pragma pack()
-
-#define EL_MULTICAST_IP "224.0.23.0"
-#define EL_PORT 3610
-#define EL_BUFFER_SIZE 256
+namespace ELConstant {
+constexpr char EL_MULTICAST_IP[] = "224.0.23.0";
+const size_t EL_BUFFER_SIZE	   = 256;
+const uint16_t EL_PORT		   = 3610;
+};  // namespace ELConstant
 
 // to HEMS用
 class ELObject {
+    public:
+#pragma pack(1)
+	typedef struct {
+		uint16_t _1081;
+		uint16_t packet_id;
+		uint16_t src_device_class;
+		uint8_t src_device_id;
+		uint16_t dst_device_class;
+		uint8_t dst_device_id;
+		uint8_t esv;
+		uint8_t epc_count;
+	} elpacket_t;
+#pragma pack()
+
     protected:
-	static uint8_t buffer[EL_BUFFER_SIZE + 32];
+	static uint8_t buffer[ELConstant::EL_BUFFER_SIZE + 32];
 	static size_t buffer_length;
 	static elpacket_t* p;
 	static uint8_t* epc_start;
@@ -50,8 +51,6 @@ class ELObject {
 class Profile : public ELObject {
     private:
 	uint8_t* profile[0xff];
-
-	// uint16_t _class_id	 = 0x7e02;
 
 	uint8_t get(uint8_t* epcs, uint8_t epc_count);
 	uint8_t set(uint8_t* epcs, uint8_t epc_count);
