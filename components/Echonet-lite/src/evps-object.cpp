@@ -90,7 +90,6 @@ uint8_t EVPS::set(uint8_t* epcs, uint8_t count) {
 
 		if (evps[epc] == nullptr) return 0;
 
-		// ここをほんとはコールバックをしたい
 		switch(epc) {
 			case 0xda: // 運転モード
 				if (update_mode_cb) {
