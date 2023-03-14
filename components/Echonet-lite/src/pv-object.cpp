@@ -5,6 +5,7 @@
 static const char* TAG = "  EL PV";
 
 PV::PV(uint8_t instance) : ELObject(instance, 0x7902), pv{} {
+	timer = xTaskGetTickCount();
 	//// スーパークラス
 	// 設置場所
 	pv[0x81] = new uint8_t[0x02]{0x01, 0b01111101}; // その他
@@ -147,12 +148,25 @@ uint8_t PV::get(uint8_t* epcs, uint8_t count) {
 
 void PV::update() {
 	// 積算値を更新する 0xe1: Wh 4byte
+	portTickType t = xTaskGetTickCount();
+	uint32_t watt_hour = (pv[0xe0][1] << 8 | pv[0xe0][0]) * (t - timer) / portTICK_PERIOD_MS / 3600 / 1000;
+	uint32_t current_wh = 
+		(pv[0xe1][1] << 24) |
+		(pv[0xe1][2] << 16) |
+		(pv[0xe1][3] << 8) |
+		(pv[0xe1][4] << 0);
+	
+	current_wh += watt_hour;
+	pv[0xe1][1] = current_wh >> 24;
+	pv[0xe1][2] = current_wh >> 16;
+	pv[0xe1][3] = current_wh >> 8;
+	pv[0xe1][4] = current_wh >> 0;
 };
 
 void PV::update(uint16_t watt) {
+	update();
 	pv[0xe0][1] = watt >> 8;
 	pv[0xe0][2] = watt & 0xff;
-	update();
 };
 
 void PV::notify_mode() {

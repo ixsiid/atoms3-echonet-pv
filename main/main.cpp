@@ -152,8 +152,14 @@ void app_main(void) {
 	// multi_addr.u_addr.ip4.addr = esp_ip4addr_aton(EL_MULTICAST_IP);
 	// ESP_LOGI("Multicast addr", "%x", multi_addr.u_addr.ip4.addr);
 
+	int pv_update_count = 100;
+
 	while (true) {
 		vTaskDelay(100 / portTICK_PERIOD_MS);
+		if (--pv_update_count < 0) {
+			pv_update_count = 100;
+			pv->update();
+		}
 
 		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
 

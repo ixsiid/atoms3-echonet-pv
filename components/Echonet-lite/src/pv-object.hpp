@@ -8,7 +8,7 @@ class PV : public ELObject {
 	uint8_t get(uint8_t* epcs, uint8_t epc_count);
 	uint8_t set(uint8_t* epcs, uint8_t epc_count);
 
-	uint32_t timer;
+	portTickType timer;
 
     public:
 	PV(uint8_t instance);
