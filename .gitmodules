@@ -1,3 +1,6 @@
 [submodule "components/WiFiManager"]
 	path = components/WiFiManager
 	url = https://github.com/ixsiid/WiFiManager.git
+[submodule "components/esp-ECHONET-Lite"]
+	path = components/esp-ECHONET-Lite
+	url = https://github.com/ixsiid/esp-ECHONET-Lite.git
