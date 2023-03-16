@@ -29,8 +29,8 @@
 
 #include "wifi_credential.h"
 /**
-#define SSID "your_ssid"
-#define WIFI_PASSWORD "your_wifi_password"
+static const char SSID[] = "your_ssid";
+static const char WIFI_PASSWORD[] = "your_wifi_password";
  */
 
 extern "C" {
@@ -98,62 +98,34 @@ void app_main(void) {
 
 	int packetSize;
 
-	Profile profile = Profile(1, 13);
+	Profile *profile = new Profile(1, 13);
 
-//	PV *pv = new PV(1);
-//	profile.add(pv);
-
-//	EVPS *evps = new EVPS(3);
-//	profile.add(evps);
+	PV *pv = new PV(1);
 
 	Battery *battery = new Battery(4);
-//	profile.add(battery);
 
-	(&profile)
-//	    ->add(pv)
-//	    ->add(evps)
+	profile
+	    ->add(pv)
 	    ->add(battery);
-
-	/*
-	evps->set_update_mode_cb([](EVPS::Mode current_mode, EVPS::Mode request_mode) {
-		EVPS_Mode next_mode;
-		switch (request_mode) {
-			case EVPS::Mode::Charge:
-				next_mode = EVPS::Mode::Charge;
-				break;
-			case EVPS::Mode::Stanby:
-			case EVPS::Mode::Stop:
-			case EVPS::Mode::Auto:
-				next_mode = EVPS::Mode::Stanby;
-				break;
-			default:
-				return EVPS::Mode::Unacceptable;
-		}
-
-		// モード繊維がないため、何もしない
-		if (current_mode == next_mode) return current_mode;
-
-		return next_mode;
-	});
-	*/
 
 	uint8_t rBuffer[ELConstant::EL_BUFFER_SIZE];
 	ELObject::elpacket_t *p = (ELObject::elpacket_t *)rBuffer;
 	uint8_t *epcs		    = rBuffer + sizeof(ELObject::elpacket_t);
 
 	esp_ip_addr_t remote_addr;
-	// esp_ip_addr_t multi_addr;
-	// multi_addr.u_addr.ip4.addr = esp_ip4addr_aton(EL_MULTICAST_IP);
-	// ESP_LOGI("Multicast addr", "%x", multi_addr.u_addr.ip4.addr);
 
-	const int pv_reset_count = 600;
+	const int pv_reset_count = 6;
 	int pv_update_count		= pv_reset_count;
+
+	pv->update(1000);
+	battery->update(1000);
 
 	while (true) {
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 		if (--pv_update_count < 0) {
 			pv_update_count = pv_reset_count;
-//			pv->update();
+			pv->update();
+			battery->update();
 		}
 
 		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
@@ -170,13 +142,13 @@ void app_main(void) {
 
 			uint8_t epc_res_count = 0;
 			switch (p->dst_device_class) {
-				case Profile::class_u16:	 // Profile
-					epc_res_count = profile.process(p, epcs);
+				case Profile::class_u16:
+					epc_res_count = profile->process(p, epcs);
 					if (epc_res_count > 0) {
-						profile.send(udp, &remote_addr);
+						profile->send(udp, &remote_addr);
 						continue;
 					}
-					break;/*
+					break;
 				case PV::class_u16:
 					epc_res_count = pv->process(p, epcs);
 					if (epc_res_count > 0) {
@@ -184,13 +156,6 @@ void app_main(void) {
 						continue;
 					}
 					break;
-				case EVPS::class_u16:
-					epc_res_count = evps->process(p, epcs);
-					if (epc_res_count > 0) {
-						evps->send(udp, &remote_addr);
-						continue;
-					}
-					break;*/
 				case Battery::class_u16:
 					epc_res_count = battery->process(p, epcs);
 					if (epc_res_count > 0) {
