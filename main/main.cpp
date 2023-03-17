@@ -68,8 +68,7 @@ void app_main(void) {
 				}
 			});
 		}
-	},
-					    "ButtonCheck", 2048, nullptr, 1, nullptr, 1);
+	}, "ButtonCheck", 2048, nullptr, 1, nullptr, 1);
 
 	vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
 
