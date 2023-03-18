@@ -100,11 +100,13 @@ void app_main(void) {
 
 	PV *pv = new PV(1);
 
-	Battery *battery = new Battery(4);
+	// Battery *battery = new Battery(4);
+	EVPS *evps = new EVPS(5);
 
 	profile
 	    ->add(pv)
-	    ->add(battery);
+	    ->add(evps);
+//	    ->add(battery);
 
 	uint8_t rBuffer[ELConstant::EL_BUFFER_SIZE];
 	ELObject::elpacket_t *p = (ELObject::elpacket_t *)rBuffer;
@@ -116,17 +118,21 @@ void app_main(void) {
 	int pv_update_count		= pv_reset_count;
 
 	pv->update(1000);
+	evps->set_input_output(1000);
+	/*
 	battery->update(1000);
 	battery->set_cb = [](ELObject * obj, uint8_t epc, uint8_t len, uint8_t*current, uint8_t*request){
 		ESP_LOGI(TAG, "Set callback %d, %d %d, %d", epc, len, current[0], request[0]);
 		return ELObject::SetRequestResult::Reject;
 	};
+
 	battery->get_cb = [](ELObject * obj, uint8_t epc, uint8_t len, uint8_t * current) {
 		if (epc == 0xa8) {
 			ESP_LOGE(TAG, "Battery update");
 			((Battery *)obj)->update();
 		}
 	};
+	*/
 
 	int packetSize;
 	while (true) {
@@ -164,10 +170,19 @@ void app_main(void) {
 						continue;
 					}
 					break;
+				/*
 				case Battery::class_u16:
 					epc_res_count = battery->process(p, epcs);
 					if (epc_res_count > 0) {
 						battery->send(udp, &remote_addr);
+						continue;
+					}
+					break;
+					*/
+				case EVPS::class_u16:
+					epc_res_count = evps->process(p, epcs);
+					if (epc_res_count > 0) {
+						evps->send(udp, &remote_addr);
 						continue;
 					}
 					break;
