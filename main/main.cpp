@@ -95,7 +95,6 @@ void app_main(void) {
 		ESP_LOGI(TAG, "Reseiver EL.udp.beginMulticast failed.");  // localPort
 	}
 
-	int packetSize;
 
 	Profile *profile = new Profile(1, 13);
 
@@ -118,13 +117,23 @@ void app_main(void) {
 
 	pv->update(1000);
 	battery->update(1000);
+	battery->set_cb = [](ELObject * obj, uint8_t epc, uint8_t len, uint8_t*current, uint8_t*request){
+		ESP_LOGI(TAG, "Set callback %d, %d %d, %d", epc, len, current[0], request[0]);
+		return ELObject::SetRequestResult::Reject;
+	};
+	battery->get_cb = [](ELObject * obj, uint8_t epc, uint8_t len, uint8_t * current) {
+		if (epc == 0xa8) {
+			ESP_LOGE(TAG, "Battery update");
+			((Battery *)obj)->update();
+		}
+	};
 
+	int packetSize;
 	while (true) {
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 		if (--pv_update_count < 0) {
 			pv_update_count = pv_reset_count;
 			pv->update();
-			battery->update();
 		}
 
 		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
