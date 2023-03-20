@@ -25,7 +25,10 @@
 #include <udp-socket.hpp>
 #include <pv-object.hpp>
 #include <evps-object.hpp>
+
 #include <battery-object.hpp>
+#include <water-heater-object.hpp>
+#include <power-distribution-object.hpp>
 
 #include "wifi_credential.h"
 /**
@@ -68,7 +71,8 @@ void app_main(void) {
 				}
 			});
 		}
-	}, "ButtonCheck", 2048, nullptr, 1, nullptr, 1);
+	},
+					    "ButtonCheck", 2048, nullptr, 1, nullptr, 1);
 
 	vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
 
@@ -95,18 +99,13 @@ void app_main(void) {
 		ESP_LOGI(TAG, "Reseiver EL.udp.beginMulticast failed.");  // localPort
 	}
 
-
 	Profile *profile = new Profile(1, 13);
-
-	PV *pv = new PV(1);
-
-	// Battery *battery = new Battery(4);
-	EVPS *evps = new EVPS(5);
+	PV *pv		  = new PV(1);
+	EVPS *evps	  = new EVPS(5);
 
 	profile
 	    ->add(pv)
 	    ->add(evps);
-//	    ->add(battery);
 
 	uint8_t rBuffer[ELConstant::EL_BUFFER_SIZE];
 	ELObject::elpacket_t *p = (ELObject::elpacket_t *)rBuffer;
@@ -114,46 +113,18 @@ void app_main(void) {
 
 	esp_ip_addr_t remote_addr;
 
-	const int pv_reset_count = 6;
-	int pv_update_count		= pv_reset_count;
+	pv->update(2200);
+	evps->set_input_output(2200);
 
-	pv->update(1000);
-	evps->set_input_output(1000);
-	/*
-	battery->update(1000);
-	battery->set_cb = [](ELObject * obj, uint8_t epc, uint8_t len, uint8_t*current, uint8_t*request){
-		ESP_LOGI(TAG, "Set callback %d, %d %d, %d", epc, len, current[0], request[0]);
-		return ELObject::SetRequestResult::Reject;
+	pv->get_cb = [](ELObject *obj, uint8_t epc, uint8_t len, uint8_t *value) {
+		if (epc == 0xe1) ((PV*)obj)->update();
 	};
-
-	battery->get_cb = [](ELObject * obj, uint8_t epc, uint8_t len, uint8_t * current) {
-		if (epc == 0xa8) {
-			ESP_LOGE(TAG, "Battery update");
-			((Battery *)obj)->update();
-		}
-	};
-	*/
 
 	int packetSize;
 	while (true) {
-		vTaskDelay(100 / portTICK_PERIOD_MS);
-		if (--pv_update_count < 0) {
-			pv_update_count = pv_reset_count;
-			pv->update();
-		}
-
 		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
 
 		if (packetSize > 0) {
-			if (epcs[0] == 0xda || true) {
-				ESP_LOGI("EL Packet", "(%04x, %04x) %04x-%02x -> %04x-%02x: ESV %02x [%02x]",
-					    p->_1081, p->packet_id,
-					    p->src_device_class, p->src_device_id,
-					    p->dst_device_class, p->dst_device_id,
-					    p->esv, p->epc_count);
-				ESP_LOG_BUFFER_HEXDUMP("EL Packet", epcs, packetSize - sizeof(ELObject::elpacket_t), ESP_LOG_INFO);
-			}
-
 			uint8_t epc_res_count = 0;
 			switch (p->dst_device_class) {
 				case Profile::class_u16:
@@ -170,15 +141,6 @@ void app_main(void) {
 						continue;
 					}
 					break;
-				/*
-				case Battery::class_u16:
-					epc_res_count = battery->process(p, epcs);
-					if (epc_res_count > 0) {
-						battery->send(udp, &remote_addr);
-						continue;
-					}
-					break;
-					*/
 				case EVPS::class_u16:
 					epc_res_count = evps->process(p, epcs);
 					if (epc_res_count > 0) {
