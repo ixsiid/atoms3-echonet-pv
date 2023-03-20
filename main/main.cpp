@@ -107,12 +107,16 @@ void app_main(void) {
 	    ->add(pv)
 	    ->add(evps);
 
-	pv->update(28);
-	evps->set_input_output(28);
+	pv->update(2468);
+	evps->update_input_output(2468);
 
 	pv->get_cb = [](ELObject *obj, uint8_t epc, uint8_t len, uint8_t *value) {
 		if (epc == 0xe1) ((PV*)obj)->update();
 	};
+	evps->get_cb = [](ELObject *obj, uint8_t epc, uint8_t len, uint8_t *value) {
+		if (epc == 0xd6 || epc == 0xd8) ((EVPS*)obj)->update();
+	};
+
 
 	Profile::el_packet_buffer_t packet_buffer;
 	while (true) {
