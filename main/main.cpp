@@ -107,51 +107,16 @@ void app_main(void) {
 	    ->add(pv)
 	    ->add(evps);
 
-	uint8_t rBuffer[ELConstant::EL_BUFFER_SIZE];
-	ELObject::elpacket_t *p = (ELObject::elpacket_t *)rBuffer;
-	uint8_t *epcs		    = rBuffer + sizeof(ELObject::elpacket_t);
-
-	esp_ip_addr_t remote_addr;
-
-	pv->update(2200);
-	evps->set_input_output(2200);
+	pv->update(28);
+	evps->set_input_output(28);
 
 	pv->get_cb = [](ELObject *obj, uint8_t epc, uint8_t len, uint8_t *value) {
 		if (epc == 0xe1) ((PV*)obj)->update();
 	};
 
-	int packetSize;
+	Profile::el_packet_buffer_t packet_buffer;
 	while (true) {
-		packetSize = udp->read(rBuffer, ELConstant::EL_BUFFER_SIZE, &remote_addr);
-
-		if (packetSize > 0) {
-			uint8_t epc_res_count = 0;
-			switch (p->dst_device_class) {
-				case Profile::class_u16:
-					epc_res_count = profile->process(p, epcs);
-					if (epc_res_count > 0) {
-						profile->send(udp, &remote_addr);
-						continue;
-					}
-					break;
-				case PV::class_u16:
-					epc_res_count = pv->process(p, epcs);
-					if (epc_res_count > 0) {
-						pv->send(udp, &remote_addr);
-						continue;
-					}
-					break;
-				case EVPS::class_u16:
-					epc_res_count = evps->process(p, epcs);
-					if (epc_res_count > 0) {
-						evps->send(udp, &remote_addr);
-						continue;
-					}
-					break;
-				default:
-					ESP_LOGE(TAG, "Unknown class access: %hx", p->dst_device_class);
-					break;
-			}
-		}
+		vTaskDelay(100 / portTICK_RATE_MS);
+		profile->process_all_instance(udp, &packet_buffer);
 	}
 }
