@@ -118,9 +118,12 @@ void app_main(void) {
 
 	ADC1 * adc = new ADC1(ADC_CHANNEL_7, 3);
 
+	// 搭載ソーラーの気電圧と設置想定ソーラー出力の変換係数
+	float volt_per_watt = 1.0f;
+
 	Profile::el_packet_buffer_t packet_buffer;
 	while (true) {
-		uint32_t pv_watt = adc->get_voltage();
+		uint32_t pv_watt = adc->get_voltage() * volt_per_watt;
 		pv->update(pv_watt);
 		evps->update_input_output(pv_watt);
 
