@@ -30,6 +30,8 @@
 #include <water-heater-object.hpp>
 #include <power-distribution-object.hpp>
 
+#include <adc1.hpp>
+
 #include "wifi_credential.h"
 /**
 static const char SSID[] = "your_ssid";
@@ -107,9 +109,6 @@ void app_main(void) {
 	    ->add(pv)
 	    ->add(evps);
 
-	pv->update(2468);
-	evps->update_input_output(2468);
-
 	pv->get_cb = [](ELObject *obj, uint8_t epc, uint8_t len, uint8_t *value) {
 		if (epc == 0xe1) ((PV*)obj)->update();
 	};
@@ -117,9 +116,14 @@ void app_main(void) {
 		if (epc == 0xd6 || epc == 0xd8) ((EVPS*)obj)->update();
 	};
 
+	ADC1 * adc = new ADC1(ADC_CHANNEL_7, 3);
 
 	Profile::el_packet_buffer_t packet_buffer;
 	while (true) {
+		uint32_t pv_watt = adc->get_voltage();
+		pv->update(pv_watt);
+		evps->update_input_output(pv_watt);
+
 		vTaskDelay(100 / portTICK_RATE_MS);
 		profile->process_all_instance(udp, &packet_buffer);
 	}
