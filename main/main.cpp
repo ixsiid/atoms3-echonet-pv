@@ -116,14 +116,23 @@ void app_main(void) {
 		if (epc == 0xd6 || epc == 0xd8) ((EVPS*)obj)->update();
 	};
 
-	ADC1 * adc = new ADC1(ADC_CHANNEL_7, 3);
+	ADC1 * adc = new ADC1(gpio_num_t::GPIO_NUM_8, ADC_CHANNEL_7, 3);
 
-	// 搭載ソーラーの気電圧と設置想定ソーラー出力の変換係数
-	float volt_per_watt = 1.0f;
+	// 搭載ソーラーの気電圧と設置想定ソーラー出力の変換関数
+	auto pv_volt_to_watt = [](uint32_t milli_volt){
+		float R = 30.0f; // [ohm]
+		float I = milli_volt / R; // [mA]
+		float W = I * milli_volt / 1000.0f / 1000.0f; // [W]
+		
+		float k = 10000.0f;
+
+		ESP_LOGI(TAG, "V: %d, I: %f, R: %f, W: %f, k: %f (%d)", milli_volt, I, R, W, W * k, (uint32_t)(W * k));
+		return (uint32_t)(W * k);
+	};
 
 	Profile::el_packet_buffer_t packet_buffer;
 	while (true) {
-		uint32_t pv_watt = adc->get_voltage() * volt_per_watt;
+		uint32_t pv_watt = pv_volt_to_watt(adc->get_voltage());
 		pv->update(pv_watt);
 		evps->update_input_output(pv_watt);
 

@@ -16,6 +16,6 @@ class ADC1 {
     protected:
 
     public:
-	ADC1(adc_channel_t channel, size_t sampling_count = 1, adc_bits_width_t width = ADC_WIDTH_BIT_12, adc_atten_t atten = ADC_ATTEN_DB_11);
+	ADC1(gpio_num_t pin, adc_channel_t channel, size_t sampling_count = 1, adc_bits_width_t width = ADC_WIDTH_BIT_12, adc_atten_t atten = ADC_ATTEN_DB_11);
 	uint32_t get_voltage();
 };
